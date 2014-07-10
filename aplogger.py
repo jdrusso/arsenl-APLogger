@@ -197,7 +197,7 @@ class APLogger(Plugin):
                                + self.stats['passes'] + self.stats['skipped'])
         self.error_report_file.write(
             u'<?xml version="1.0" encoding="%(encoding)s"?>'
-            u'<testsuite name="nosetests" tests="%(total)d" '
+            u'<testsuite name="Ender\'s Game" tests="%(total)d" '
             u'errors="%(errors)d" failures="%(failures)d" '
             u'passed="%(passes)d" skip="%(skipped)d">' % self.stats)
 
