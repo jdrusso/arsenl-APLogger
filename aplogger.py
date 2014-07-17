@@ -7,6 +7,7 @@ import re
 import inspect
 import fcntl
 import select
+import datetime
 from StringIO import StringIO
 from time import time
 from xml.sax import saxutils
@@ -81,14 +82,15 @@ def exc_message(exc_info):
 
 def readFromPipe(pipe):
     try:
-        if select.select([pipe,],[],[], 2)[0]:
-            data = os.read(pipe, 4096)
-        else:
-            data = None
+        data = ''
+        while select.select([pipe,],[],[], 2)[0]:
+            data += os.read(pipe, 1)
     except select.error:
         data = None
+        print('select error')
         raise select.error
     finally:
+
         return data
 
 class Tee(object):
@@ -197,14 +199,14 @@ class APLogger(Plugin):
                                + self.stats['passes'] + self.stats['skipped'])
         self.error_report_file.write(
             u'<?xml version="1.0" encoding="%(encoding)s"?>'
-            u'<testsuite name="Ender\'s Game" tests="%(total)d" '
+            u'<TestRun project_name="Ender\'s Game" tests="%(total)d" '
             u'errors="%(errors)d" failures="%(failures)d" '
             u'passed="%(passes)d" skip="%(skipped)d">' % self.stats)
 
         self.error_report_file.write(u''.join([force_unicode(e, self.encoding)
                                                for e in self.errorlist]))
 
-        self.error_report_file.write(u'</testsuite>')
+        self.error_report_file.write(u'</TestRun>')
         self.error_report_file.close()
         if self.config.verbosity > 1:
             stream.writeln("-" * 70)
@@ -277,7 +279,7 @@ class APLogger(Plugin):
         if data:
             return '<JSBSim-out><![CDATA[%s]]></JSBSim-out>' % escape_cdata(data)
         else:
-            return ''
+            return 'No JSBSim output'
 
     def _getCapturedMAV(self):
 
@@ -286,7 +288,7 @@ class APLogger(Plugin):
         if data:
             return '<MAVProxy-out><![CDATA[%s]]></MAVProxy-out>' % escape_cdata(data)
         else:
-            return 'asdf'
+            return 'No mavproxy output'
 
     def addError(self, test, err, capt=None):
         """Add error output to Xunit report.
@@ -304,11 +306,12 @@ class APLogger(Plugin):
         id = test.id()
 
         self.errorlist.append(
-            u'<testcase classname=%(cls)s name=%(name)s time="%(taken).3f">'
+            u'<TestCase status="ERROR" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s>'
             u'<%(type)s type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
             u'</%(type)s>%(systemout)s%(systemerr)s'
-            u'%(MAVProxyout)s%(JSBsimout)s</testcase>' %
+            u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
+             'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
              'type': type,
@@ -330,11 +333,12 @@ class APLogger(Plugin):
         id = test.id()
 
         self.errorlist.append(
-            u'<testcase classname=%(cls)s name=%(name)s time="%(taken).3f">'
+            u'<TestCase status="FAIL" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s>'
             u'<failure type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
             u'</failure>%(systemout)s%(systemerr)s'
-            u'%(MAVProxyout)s%(JSBsimout)s</testcase>' %
+            u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
+             'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
              'errtype': self._quoteattr(nice_classname(err[0])),
@@ -353,10 +357,11 @@ class APLogger(Plugin):
         self.stats['passes'] += 1
         id = test.id()
         self.errorlist.append(
-            u'<testcase classname=%(cls)s name=%(name)s '
-            u'time="%(taken).3f">%(systemout)s%(systemerr)s'
-            u'%(MAVProxyout)s%(JSBsimout)s</testcase>' %
+            u'<TestCase status="PASS" classname=%(cls)s name=%(name)s '
+            u'time="%(taken).3f" datestamp=%(datestamp)s>%(systemout)s%(systemerr)s'
+            u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
+             'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
              'systemout': self._getCapturedStdout(),
