@@ -247,7 +247,8 @@ class APLogger(Plugin):
 
     def beforeTest(self, test):
         """Initializes a timer before starting a test."""
-        if 'teardown' not in self._quoteattr(id_split(test.id)[-1]):
+        if 'teardown' not in self._quoteattr(id_split(test.id)[-1])\
+            and 'setup' not in self._quoteattr(id_split(test.id)[-1]):
             self._timer = time()
             self._startCapture()
 
