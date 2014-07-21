@@ -130,6 +130,15 @@ class APLogger(Plugin):
         self._currentMavpipe = None
         self._currentJSBpipe = None
 
+        try:
+            os.remove('jsb_pipe')
+            os.remove('mavproxy_pipe')
+        except Exception:
+            pass
+
+        os.system('mkfifo mavproxy_pipe')
+        os.system('mkfifo jsb_pipe')
+
     def _timeTaken(self):
         if hasattr(self, '_timer'):
             taken = time() - self._timer
@@ -238,19 +247,21 @@ class APLogger(Plugin):
 
     def beforeTest(self, test):
         """Initializes a timer before starting a test."""
-        self._timer = time()
-        self._startCapture()
+        if 'teardown' not in self._quoteattr(id_split(test.id)[-1]):
+            self._timer = time()
+            self._startCapture()
 
     def _endCapture(self):
         if self._capture_stack:
             sys.stdout, sys.stderr, self.jsb_pipe, self.mav_pipe = self._capture_stack.pop()
 
     def afterTest(self, test):
-        self._endCapture()
-        self._currentStdout = None
-        self._currentStderr = None
-        self._currentJSBpipe = None
-        self._currentMavpipe = None
+        if 'teardown' not in self._quoteattr(id_split(test.id)[-1]):
+            self._endCapture()
+            self._currentStdout = None
+            self._currentStderr = None
+            self._currentJSBpipe = None
+            self._currentMavpipe = None
 
     def finalize(self, test):
         while self._capture_stack:
