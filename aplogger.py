@@ -257,7 +257,8 @@ class APLogger(Plugin):
             sys.stdout, sys.stderr, self.jsb_pipe, self.mav_pipe = self._capture_stack.pop()
 
     def afterTest(self, test):
-        if 'teardown' not in self._quoteattr(id_split(test.id)[-1]):
+        if 'teardown' not in self._quoteattr(id_split(test.id())[-1])\
+            and 'setup' not in self._quoteattr(id_split(test.id())[-1]):
             self._endCapture()
             self._currentStdout = None
             self._currentStderr = None
