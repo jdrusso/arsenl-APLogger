@@ -11,6 +11,7 @@ import datetime
 from StringIO import StringIO
 from time import time
 from xml.sax import saxutils
+from subprocess import check_output
 
 from nose.plugins.base import Plugin
 from nose.exc import SkipTest
@@ -93,6 +94,14 @@ def readFromPipe(pipe):
 
         return data
 
+def get_SHA_list():
+    ap_SHA = check_output(["cd ../arsenl-ardupilot; git rev-parse HEAD"], shell=True)[:-1]
+    mavproxy_SHA = check_output(["cd ../mavproxy; git rev-parse HEAD"], shell=True)[:-1]
+    mavlink_SHA = check_output(["cd ../mavlink; git rev-parse HEAD"], shell=True)[:-1]
+
+    SHA_list = [ap_SHA, mavproxy_SHA, mavlink_SHA]
+    return SHA_list
+
 class Tee(object):
     def __init__(self, encoding, *args):
         self._encoding = encoding
@@ -129,6 +138,8 @@ class APLogger(Plugin):
         self._currentStderr = None
         self._currentMavpipe = None
         self._currentJSBpipe = None
+
+        self.SHA_list = get_SHA_list()
 
         try:
             os.remove('jsb_pipe')
@@ -320,7 +331,7 @@ class APLogger(Plugin):
 
         self.errorlist.append(
             u'<TestCase status="ERROR" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s>'
-            u'<%(type)s type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
+            u'<%(type)s type=%(errtype)s message=%(message)s sha_list="%(sha_list)s"><![CDATA[%(tb)s]]>'
             u'</%(type)s>%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
@@ -330,6 +341,7 @@ class APLogger(Plugin):
              'type': type,
              'errtype': self._quoteattr(nice_classname(err[0])),
              'message': self._quoteattr(exc_message(err)),
+             'sha_list': self.SHA_list,
              'tb': escape_cdata(tb),
              'systemout': self._getCapturedStdout(),
              'systemerr': self._getCapturedStderr(),
@@ -347,7 +359,7 @@ class APLogger(Plugin):
 
         self.errorlist.append(
             u'<TestCase status="FAIL" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s>'
-            u'<failure type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
+            u'<failure type=%(errtype)s message=%(message)s sha_list="%(sha_list)s"><![CDATA[%(tb)s]]>'
             u'</failure>%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
@@ -356,6 +368,7 @@ class APLogger(Plugin):
              'taken': taken,
              'errtype': self._quoteattr(nice_classname(err[0])),
              'message': self._quoteattr(exc_message(err)),
+             'sha_list': self.SHA_list,
              'tb': escape_cdata(tb),
              'systemout': self._getCapturedStdout(),
              'systemerr': self._getCapturedStderr(),
@@ -371,10 +384,11 @@ class APLogger(Plugin):
         id = test.id()
         self.errorlist.append(
             u'<TestCase status="PASS" classname=%(cls)s name=%(name)s '
-            u'time="%(taken).3f" datestamp=%(datestamp)s>%(systemout)s%(systemerr)s'
+            u'time="%(taken).3f" datestamp=%(datestamp)s sha_list="%(sha_list)s">%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
              'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
+             'sha_list': self.SHA_list,
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
              'systemout': self._getCapturedStdout(),
