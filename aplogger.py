@@ -330,8 +330,8 @@ class APLogger(Plugin):
         id = test.id()
 
         self.errorlist.append(
-            u'<TestCase status="ERROR" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s>'
-            u'<%(type)s type=%(errtype)s message=%(message)s sha_list="%(sha_list)s"><![CDATA[%(tb)s]]>'
+            u'<TestCase status="ERROR" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s sha_list="%(sha_list)s">'
+            u'<%(type)s type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
             u'</%(type)s>%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
@@ -358,8 +358,8 @@ class APLogger(Plugin):
         id = test.id()
 
         self.errorlist.append(
-            u'<TestCase status="FAIL" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s>'
-            u'<failure type=%(errtype)s message=%(message)s sha_list="%(sha_list)s"><![CDATA[%(tb)s]]>'
+            u'<TestCase status="FAIL" classname=%(cls)s name=%(name)s time="%(taken).3f" datestamp=%(datestamp)s sha_list="%(sha_list)s">'
+            u'<failure type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
             u'</failure>%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
