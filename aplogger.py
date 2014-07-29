@@ -84,7 +84,7 @@ def exc_message(exc_info):
 def readFromPipe(pipe):
     try:
         data = ''
-        while select.select([pipe,],[],[], 2)[0]:
+        while select.select([pipe,],[],[], 2)[0] != []:
             data += os.read(pipe, 1)
     except select.error:
         data = None
@@ -199,7 +199,7 @@ class APLogger(Plugin):
                           'skipped': 0
                           }
             self.errorlist = []
-            self.error_report_file_name = os.path.realpath(options.xunit_file)
+            self.error_report_file_name = os.path.realpath('aplog.xml')
             self.jsb_pipe = options.jsbpipe
             self.mav_pipe = options.mavpipe
             self.jsb_pipename = options.jsbpipe
