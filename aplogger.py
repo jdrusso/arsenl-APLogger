@@ -335,7 +335,7 @@ class APLogger(Plugin):
             u'</%(type)s>%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
-             'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
+             'datestamp': self._quoteattr(str(datetime.datetime.now())[:-3]),
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
              'type': type,
@@ -363,7 +363,7 @@ class APLogger(Plugin):
             u'</failure>%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
-             'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
+             'datestamp': self._quoteattr(str(datetime.datetime.now())[:-3]),
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
              'errtype': self._quoteattr(nice_classname(err[0])),
@@ -387,7 +387,7 @@ class APLogger(Plugin):
             u'time="%(taken).3f" datestamp=%(datestamp)s sha_list="%(sha_list)s">%(systemout)s%(systemerr)s'
             u'%(MAVProxyout)s%(JSBsimout)s</TestCase>' %
             {'cls': self._quoteattr(id_split(id)[0]),
-             'datestamp': self._quoteattr(str(datetime.datetime.now()).split('.')[0]),
+             'datestamp': self._quoteattr(str(datetime.datetime.now())[:-3]),
              'sha_list': self.SHA_list,
              'name': self._quoteattr(id_split(id)[-1]),
              'taken': taken,
